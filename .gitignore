@@ -1,0 +1,8 @@
+.DS_Store
+*/.DS_Store
+data/
+*/data/
+__pycache__/
+*/__pycache__/
+.idea/
+
