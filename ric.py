@@ -2,6 +2,8 @@ import pandas as pd
 import numpy as np
 import random
 from bisect import bisect_left
+import os
+import pickle
 
 
 class PriorityQueue(object):
@@ -53,6 +55,7 @@ class RIC(object):
         binary: whether the features are binary,
             if true, 0 stands for occurrence and 0 for obsence, only the 1s are concerned,
             if false, different values will be treated the same.
+        positive_class: bool. If true, only rules for positive class will be considered.
         frequent_set: the frequent itemsets for different classes,
             a dict in the form of {label: orderlist},
             where the elements in the orderlist is (item, freq),
@@ -74,7 +77,7 @@ class RIC(object):
     """
 
     def __init__(self, n_freq, n_conf, max_order=2, max_depth=1000, min_size=2, n_chain=1000,
-                 binary=False, random_state=2020):
+                 binary=False, positive_class=False, random_state=2020):
         """Init class with features that need to be encoded"""
         self.max_depth = max_depth
         self.min_size = min_size
@@ -83,6 +86,7 @@ class RIC(object):
         self.n_conf = n_conf
         self.max_order = max_order
         self.binary = binary
+        self.positive_class = positive_class
         self.frequent_set = None
         self.confident_rule = None
         self.rules = None
@@ -264,6 +268,8 @@ class RIC(object):
             return conf / (1.0001 - conf) * (1 - prior) / (prior + 0.0001)
 
         for c in self.confident_rule:
+            if self.positive_class and c == 0:
+                continue
             for item, conf in self.confident_rule[c].items:
                 antecedents = tuple(map(lambda x: (features[x[0]], x[1]), item))
                 consequence = c
@@ -408,3 +414,22 @@ class RIC_ctn(RIC):
                         vals *= X[f].values
                     res[feature_name] = vals
         return pd.DataFrame(res, index=X.index)
+
+    def save(self, path):
+        """Save the RIC model."""
+        with open(path, "wb") as handle:
+            pickle.dump(self.__dict__, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+
+def load_ric(path):
+    """Load the RICO model"""
+    if os.path.exists(path):
+        with open(path, "rb") as handle:
+            attr_dict = pickle.load(handle)
+        ric = RIC(0, 0)
+        for attr in attr_dict:
+            ric.__dict__[attr] = attr_dict[attr]
+        return ric
+    else:
+        print("file {} does not exist".format(path))
+        return None

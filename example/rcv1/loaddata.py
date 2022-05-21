@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 
 
-def load_data_rcv1():
+def load_data_rcv1(is_write=False):
     """load data from the files.
     Returns:
         train: the training data, a dict whose key is a did
@@ -58,9 +58,10 @@ def load_data_rcv1():
             test[did] = tids
 
     fp_tid = r"data/RCV1/tids.txt"
-    # with open(fp_tid, 'w') as f:
-    #     for tid in select_tid(train):
-    #         f.write(tid+'\n')
+    if is_write:
+        with open(fp_tid, 'w') as f:
+            for tid in select_tid(train):
+                f.write(tid+'\n')
 
     tid_used = []
     with open(fp_tid, 'r') as f:
@@ -79,9 +80,10 @@ def load_data_rcv1():
                     topics[topic]= [did]
 
     fp_topic_used = r"data/RCV1/topics.txt"
-    # with open(fp_topic_used, 'w') as f:
-    #     for topic in select_topics(topics):
-    #         f.write(topic+'\n')
+    if is_write:
+        with open(fp_topic_used, 'w') as f:
+            for topic in select_topics(topics):
+                f.write(topic+'\n')
 
     topic_used = []
     with open(fp_topic_used, 'r') as f:
